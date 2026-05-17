@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { PrismaClient } from "../generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { magicLink } from "better-auth/plugins";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
