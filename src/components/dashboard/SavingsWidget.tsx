@@ -48,8 +48,8 @@ export function SavingsWidget({ pots }: SavingsWidgetProps) {
     );
   }
 
-  const totalSaved = pots.reduce((s, p) => s + p.current_amount, 0);
-  const totalTarget = pots.reduce((s, p) => s + p.target_amount, 0);
+  const totalSaved = pots.reduce((s, p) => s + p.currentAmount, 0);
+  const totalTarget = pots.reduce((s, p) => s + p.targetAmount, 0);
 
   // Show max 3 pots in widget
   const displayPots = pots.slice(0, 3);
@@ -99,7 +99,7 @@ export function SavingsWidget({ pots }: SavingsWidgetProps) {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {displayPots.map((pot) => {
-            const pct = Math.min((pot.currentAmount / pot.target_amount) * 100, 100);
+            const pct = Math.min((pot.currentAmount / pot.targetAmount) * 100, 100);
             return (
               <div key={pot.id}>
                 <div
