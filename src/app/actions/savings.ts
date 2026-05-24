@@ -54,10 +54,11 @@ export async function getSavingsPots(): Promise<SavingsPot[]> {
   });
 
   return pots.map((p) => ({
-    ...p,
-    createdAt: p.createdAt.toISOString(),
-    updatedAt: p.updatedAt.toISOString(),
-  }));
+  ...p,
+  color: p.color as SavingsPot["color"],
+  createdAt: p.createdAt.toISOString(),
+  updatedAt: p.updatedAt.toISOString(),
+}));
 }
 
 export async function createSavingsPot(formData: {
