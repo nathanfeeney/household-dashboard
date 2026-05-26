@@ -13,7 +13,7 @@ export type SavingsPot = {
   emoji: string;
   targetAmount: number;
   currentAmount: number;
-  color: "green" | "blue" | "amber" | "coral" | "purple";
+  color: "green" | "blue" | "amber" | "coral" | "purple" | "teal" | "pink" | "indigo" | "lime" | "slate";
   isArchived: boolean;
   createdAt: string;
   updatedAt: string;

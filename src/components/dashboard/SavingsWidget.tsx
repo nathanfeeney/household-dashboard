@@ -4,11 +4,17 @@ import Link from "next/link";
 import type { SavingsPot } from "@/app/actions/savings";
 
 const BAR_COLORS: Record<SavingsPot["color"], string> = {
-  green: "#1D9E75",
-  blue: "#378ADD",
-  amber: "#EF9F27",
-  coral: "#D85A30",
-  purple: "#7F77DD",
+  green: "#1D9E75",   // success / growth
+  blue: "#378ADD",    // primary / info
+  amber: "#EF9F27",   // warning / attention
+  coral: "#D85A30",   // error / destructive warm
+  purple: "#7F77DD",  // creative / premium
+
+  teal: "#2BB3B1",    // calm / analytics
+  pink: "#E46AA5",    // playful / highlights
+  indigo: "#4B63D6",  // deeper primary alternative
+  lime: "#A3C644",    // positive / subtle success variant
+  slate: "#64748B"    // neutral UI accent / secondary actions
 };
 
 type SavingsWidgetProps = {

@@ -52,7 +52,7 @@ export function ShoppingWidget({ items, lastAddedBy, lastAddedAt }: ShoppingWidg
           style={{
             fontSize: "11px",
             fontWeight: 500,
-            color: "#999",
+            color: "#5c5c5c",
             textTransform: "uppercase",
             letterSpacing: "0.5px",
             marginBottom: "10px",

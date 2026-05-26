@@ -18,10 +18,15 @@ const COLOR_MAP: Record<
   amber:  { bar: "#EF9F27", bg: "#FAEEDA", text: "#633806", badge: "#FAC775" },
   coral:  { bar: "#D85A30", bg: "#FAECE7", text: "#4A1B0C", badge: "#F5C4B3" },
   purple: { bar: "#7F77DD", bg: "#EEEDFE", text: "#26215C", badge: "#CECBF6" },
+  teal:   { bar: "#2BB3B1", bg: "#E0F7F7", text: "#006969", badge: "#80CBC4" },
+  pink:   { bar: "#E46AA5", bg: "#F8E6F0", text: "#7B1FA2", badge: "#F48FB1" },
+  indigo: { bar: "#4B63D6", bg: "#E8EAF6", text: "#1A237E", badge: "#9575CD" },
+  lime:   { bar: "#A3C644", bg: "#F1F8E9", text: "#33691E", badge: "#C5E1A5" },
+  slate:  { bar: "#64748B", bg: "#E2E8F0", text: "#2D3748", badge: "#A0AEC0" },
 };
 
 const EMOJI_OPTIONS = ["🏖️", "🚨", "🏠", "🎄", "🚗", "💍", "🎓", "✈️", "💻", "🐾"];
-const COLOR_OPTIONS: SavingsPot["color"][] = ["green", "blue", "amber", "coral", "purple"];
+const COLOR_OPTIONS: SavingsPot["color"][] = ["green", "blue", "amber", "coral", "purple", "teal", "pink", "indigo", "lime", "slate"];
 
 function ProgressBar({ current, target, color }: { current: number; target: number; color: SavingsPot["color"] }) {
   const pct = Math.min((current / target) * 100, 100);

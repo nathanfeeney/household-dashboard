@@ -104,7 +104,7 @@ export default function ReminderList({ initialReminders }: { initialReminders: R
       )}
 
       {reminders.length === 0 && (
-        <p style={{ textAlign: "center", color: "#9ca3af", marginTop: "2rem" }}>No reminders set</p>
+        <p style={{ textAlign: "center", marginTop: "2rem" }}>No reminders set</p>
       )}
     </div>
   );

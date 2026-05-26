@@ -75,8 +75,8 @@ export default function TodoList({ initialItems }: { initialItems: Item[] }) {
       {active.map(item => (
         <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", background: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px", marginBottom: "6px" }}>
           <input type="checkbox" checked={item.done} onChange={() => handleToggle(item.id, item.done)} />
-          <span style={{ flex: 1, fontSize: "14px" }}>{item.label}</span>
-          <span style={{ fontSize: "11px", color: "#6b7280" }}>{item.assignedTo}</span>
+          <span style={{ flex: 1, fontSize: "14px", color: "#626262" }}>{item.label}</span>
+          <span style={{ fontSize: "11px", color: "#EF4444" }}>{item.assignedTo}</span>
           <button onClick={() => handleDelete(item.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "16px" }}>✕</button>
         </div>
       ))}
