@@ -17,7 +17,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div style={{ maxWidth: "480px", margin: "0 auto", minHeight: "100vh", paddingBottom: "70px" }}>
+    <div className="page-wrapper">
       {children}
       <BottomNav />
     </div>

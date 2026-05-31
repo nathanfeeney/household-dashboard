@@ -2,38 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { HomeIcon, WalletIcon, PiggyBankIcon, ListIcon, CheckSquareIcon } from "./Icons";
 
 const NAV_ITEMS = [
-  { href: "/dashboard",          label: "Home",     icon: "⌂"  },
-  { href: "/dashboard/spending", label: "Finance",    icon: "£"  },
-  { href: "/dashboard/savings",  label: "Savings",  icon: "◎"  },
-  { href: "/dashboard/shopping", label: "Lists",    icon: "☑"  },
-  { href: "/dashboard/todo",     label: "Tasks",    icon: "✓"  },
+  { href: "/dashboard",          label: "Home",    Icon: HomeIcon      },
+  { href: "/dashboard/spending", label: "Finance", Icon: WalletIcon    },
+  { href: "/dashboard/savings",  label: "Savings", Icon: PiggyBankIcon },
+  { href: "/dashboard/shopping", label: "Lists",   Icon: ListIcon      },
+  { href: "/dashboard/todo",     label: "Tasks",   Icon: CheckSquareIcon },
 ] as const;
 
 export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav
-      style={{
-        position: "fixed",
-        bottom: 0,
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: "100%",
-        maxWidth: "480px",
-        background: "rgba(255,255,255,0.92)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderTop: "0.5px solid #E5E5E5",
-        display: "flex",
-        justifyContent: "space-around",
-        padding: "10px 0 max(14px, env(safe-area-inset-bottom))",
-        zIndex: 40,
-      }}
-    >
-      {NAV_ITEMS.map(({ href, label, icon }) => {
+    <nav className="bottom-nav">
+      {NAV_ITEMS.map(({ href, label, Icon }) => {
         const isActive =
           href === "/dashboard"
             ? pathname === "/dashboard"
@@ -42,35 +26,10 @@ export default function BottomNav() {
           <Link
             key={href}
             href={href}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "3px",
-              textDecoration: "none",
-              color: isActive ? "#1a1a1a" : "#AAA",
-              minWidth: "52px",
-              transition: "color 0.15s",
-            }}
+            className={`bottom-nav__item${isActive ? " bottom-nav__item--active" : ""}` }
           >
-            <span
-              style={{
-                fontSize: "20px",
-                lineHeight: 1,
-                fontWeight: isActive ? 600 : 400,
-              }}
-            >
-              {icon}
-            </span>
-            <span
-              style={{
-                fontSize: "10px",
-                fontWeight: isActive ? 500 : 400,
-                letterSpacing: "0.2px",
-              }}
-            >
-              {label}
-            </span>
+            <Icon className="bottom-nav__icon" size={22} strokeWidth={isActive ? 2.1 : 1.65} />
+            <span className="bottom-nav__label">{label}</span>
           </Link>
         );
       })}

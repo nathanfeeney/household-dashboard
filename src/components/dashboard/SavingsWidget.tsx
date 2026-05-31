@@ -4,152 +4,74 @@ import Link from "next/link";
 import type { SavingsPot } from "@/app/actions/savings";
 
 const BAR_COLORS: Record<SavingsPot["color"], string> = {
-  green: "#1D9E75",   // success / growth
-  blue: "#378ADD",    // primary / info
-  amber: "#EF9F27",   // warning / attention
-  coral: "#D85A30",   // error / destructive warm
-  purple: "#7F77DD",  // creative / premium
-
-  teal: "#2BB3B1",    // calm / analytics
-  pink: "#E46AA5",    // playful / highlights
-  indigo: "#4B63D6",  // deeper primary alternative
-  lime: "#A3C644",    // positive / subtle success variant
-  slate: "#64748B"    // neutral UI accent / secondary actions
+  green:  "var(--clr-accent)",
+  blue:   "#378ADD",
+  amber:  "var(--clr-warning)",
+  coral:  "#D85A30",
+  purple: "#7F77DD",
+  teal:   "#2BB3B1",
+  pink:   "#E46AA5",
+  indigo: "#4B63D6",
+  lime:   "#A3C644",
+  slate:  "#64748B",
 };
 
-type SavingsWidgetProps = {
-  pots: SavingsPot[];
-};
+type SavingsWidgetProps = { pots: SavingsPot[] };
 
 export function SavingsWidget({ pots }: SavingsWidgetProps) {
-  if (pots.length === 0) {
-    return (
-      <div
-        style={{
-          background: "#fff",
-          border: "0.5px solid #E5E5E5",
-          borderRadius: "16px",
-          padding: "18px",
-        }}
-      >
-        <div
-          style={{
-            fontSize: "11px",
-            fontWeight: 500,
-            color: "#999",
-            textTransform: "uppercase",
-            letterSpacing: "0.5px",
-            marginBottom: "12px",
-          }}
-        >
-          Savings pots
-        </div>
-        <div style={{ fontSize: "13px", color: "#999", textAlign: "center", padding: "12px 0" }}>
-          No pots yet —{" "}
-          <Link href="/dashboard/savings" style={{ color: "#1a1a1a", textDecoration: "underline" }}>
-            create one
-          </Link>
-        </div>
+  const emptyState = (
+    <div className="card">
+      <div className="widget-label">Savings pots</div>
+      <div style={{ fontSize: "13px", color: "var(--clr-ink-3)", textAlign: "center", padding: "12px 0" }}>
+        No pots yet —{" "}
+        <Link className="card card--interactive" href="/dashboard/savings" style={{ color: "var(--clr-ink)", textDecoration: "underline" }}>
+          create one
+        </Link>
       </div>
-    );
-  }
+    </div>
+  );
 
-  const totalSaved = pots.reduce((s, p) => s + p.currentAmount, 0);
-  const totalTarget = pots.reduce((s, p) => s + p.targetAmount, 0);
+  if (pots.length === 0) return emptyState;
 
-  // Show max 3 pots in widget
+  const totalSaved  = pots.reduce((s, p) => s + p.currentAmount, 0);
+  const totalTarget = pots.reduce((s, p) => s + p.targetAmount,  0);
   const displayPots = pots.slice(0, 3);
 
   return (
-    <Link href="/dashboard/savings" style={{ textDecoration: "none" }}>
-      <div
-        style={{
-          background: "#fff",
-          border: "0.5px solid #E5E5E5",
-          borderRadius: "16px",
-          padding: "18px",
-          cursor: "pointer",
-          transition: "border-color 0.15s",
-        }}
-        onMouseEnter={(e) =>
-          ((e.currentTarget as HTMLDivElement).style.borderColor = "#CCC")
-        }
-        onMouseLeave={(e) =>
-          ((e.currentTarget as HTMLDivElement).style.borderColor = "#E5E5E5")
-        }
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "12px",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "11px",
-              fontWeight: 500,
-              color: "#999",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Savings pots
-          </div>
-          <div style={{ fontSize: "12px", color: "#999" }}>
-            £{totalSaved.toLocaleString("en-GB", { minimumFractionDigits: 0 })} /{" "}
-            £{totalTarget.toLocaleString("en-GB", { minimumFractionDigits: 0 })}
-          </div>
-        </div>
+    <Link href="/dashboard/savings" className="card card--interactive">
+      <div className="widget-label-row">
+        <span className="widget-label" style={{ marginBottom: 0 }}>Savings pots</span>
+        <span style={{ fontSize: "12px", color: "var(--clr-ink-3)", fontFamily: "var(--font-mono)" }}>
+          £{totalSaved.toLocaleString("en-GB")} / £{totalTarget.toLocaleString("en-GB")}
+        </span>
+      </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {displayPots.map((pot) => {
-            const pct = Math.min((pot.currentAmount / pot.targetAmount) * 100, 100);
-            return (
-              <div key={pot.id}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "5px",
-                  }}
-                >
-                  <div style={{ fontSize: "13px", color: "#1a1a1a", display: "flex", gap: "6px" }}>
-                    <span>{pot.emoji}</span>
-                    <span>{pot.name}</span>
-                  </div>
-                  <span style={{ fontSize: "12px", color: "#999" }}>
-                    {Math.round(pct)}%
-                  </span>
-                </div>
-                <div
-                  style={{
-                    height: "4px",
-                    background: "#F0F0F0",
-                    borderRadius: "99px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      height: "100%",
-                      width: `${pct}%`,
-                      background: BAR_COLORS[pot.color],
-                      borderRadius: "99px",
-                    }}
-                  />
-                </div>
+      <div className="savings-pot-row">
+        {displayPots.map((pot) => {
+          const pct = Math.min((pot.currentAmount / pot.targetAmount) * 100, 100);
+          return (
+            <div key={pot.id}>
+              <div className="savings-pot-item__header">
+                <span className="savings-pot-item__name">
+                  <span>{pot.emoji}</span>
+                  <span>{pot.name}</span>
+                </span>
+                <span className="savings-pot-item__pct">{Math.round(pct)}%</span>
               </div>
-            );
-          })}
-          {pots.length > 3 && (
-            <div style={{ fontSize: "12px", color: "#999", textAlign: "center" }}>
-              +{pots.length - 3} more pot{pots.length - 3 !== 1 ? "s" : ""}
+              <div className="progress-track" style={{ height: "4px" }}>
+                <div
+                  className="progress-fill"
+                  style={{ width: `${pct}%`, background: BAR_COLORS[pot.color] }}
+                />
+              </div>
             </div>
-          )}
-        </div>
+          );
+        })}
+        {pots.length > 3 && (
+          <div style={{ fontSize: "12px", color: "var(--clr-ink-4)", textAlign: "center" }}>
+            +{pots.length - 3} more pot{pots.length - 3 !== 1 ? "s" : ""}
+          </div>
+        )}
       </div>
     </Link>
   );

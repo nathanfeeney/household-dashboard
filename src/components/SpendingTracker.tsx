@@ -1,163 +1,464 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { addSpendingEntry, deleteSpendingEntry, getSpendingEntries } from "@/app/actions/spending";
+import { useState, useTransition } from "react";
+import { addSpendingEntry, deleteSpendingEntry } from "@/app/actions/spending";
+import { PlusIcon, WalletIcon } from "@/components/Icons";
 
-type Entry = {
+type SpendingEntry = {
   id: string;
   label: string;
   amount: number;
   category: string;
-  date: Date;
-  addedBy: { name: string | null; email: string };
+  date: Date | string;
+  addedBy?: { name: string | null; email: string } | null;
 };
 
-const categories = ["food", "home", "car", "personal", "other"];
-
-const catColors: Record<string, string> = {
-  food: "#1D9E75",
-  home: "#378ADD",
-  car: "#BA7517",
-  personal: "#D4537E",
-  other: "#888780",
-};
-
-const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-
-export default function SpendingTracker({ initialEntries, initialMonth, initialYear }: {
-  initialEntries: Entry[];
+type SpendingTrackerProps = {
+  initialEntries: SpendingEntry[];
   initialMonth: number;
   initialYear: number;
-}) {
-  const [entries, setEntries] = useState(initialEntries);
-  const [month, setMonth] = useState(initialMonth);
-  const [year, setYear] = useState(initialYear);
+};
+
+const CATEGORIES = [
+  "Groceries",
+  "Eating out",
+  "Transport",
+  "Utilities",
+  "Entertainment",
+  "Health",
+  "Shopping",
+  "Other",
+];
+
+const CATEGORY_COLORS: Record<string, string> = {
+  "Groceries":     "var(--clr-accent)",
+  "Eating out":    "#E46AA5",
+  "Transport":     "#378ADD",
+  "Utilities":     "#64748B",
+  "Entertainment": "#7F77DD",
+  "Health":        "#2BB3B1",
+  "Shopping":      "#EF9F27",
+  "Other":         "#A3C644",
+};
+
+const MONTHLY_BUDGET = 2800;
+
+function formatDate(d: Date | string): string {
+  return new Date(d).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
+function formatAmount(n: number): string {
+  return `£${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function CategoryDot({ category }: { category: string }) {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        background: CATEGORY_COLORS[category] ?? "var(--clr-ink-4)",
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
+export default function SpendingTracker({
+  initialEntries,
+  initialMonth,
+  initialYear,
+}: SpendingTrackerProps) {
+  const [entries, setEntries] = useState<SpendingEntry[]>(initialEntries);
+  const [showForm, setShowForm] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Form state
   const [label, setLabel] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("food");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [formError, setFormError] = useState("");
 
-  async function handleAdd() {
-    if (!label.trim() || !amount || parseFloat(amount) <= 0) return;
-    setLoading(true);
-    await addSpendingEntry(label.trim(), parseFloat(amount), category, date);
-    setLabel("");
-    setAmount("");
-    setLoading(false);
-    router.refresh();
+  const totalSpent = entries.reduce((s, e) => s + e.amount, 0);
+  const pct = Math.min((totalSpent / MONTHLY_BUDGET) * 100, 100);
+  const remaining = Math.max(MONTHLY_BUDGET - totalSpent, 0);
+
+  // Group by category for mini breakdown
+  const byCategory = entries.reduce<Record<string, number>>((acc, e) => {
+    acc[e.category] = (acc[e.category] ?? 0) + e.amount;
+    return acc;
+  }, {});
+  const topCategories = Object.entries(byCategory)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
+
+  function handleAdd() {
+    const parsed = parseFloat(amount);
+    if (!label.trim()) { setFormError("Please enter a description."); return; }
+    if (isNaN(parsed) || parsed <= 0) { setFormError("Please enter a valid amount."); return; }
+    setFormError("");
+
+    startTransition(async () => {
+      await addSpendingEntry(label.trim(), parsed, category, date);
+      // Optimistic update
+      setEntries((prev) => [
+        {
+          id: crypto.randomUUID(),
+          label: label.trim(),
+          amount: parsed,
+          category,
+          date: new Date(date),
+          addedBy: null,
+        },
+        ...prev,
+      ]);
+      setLabel("");
+      setAmount("");
+      setCategory(CATEGORIES[0]);
+      setDate(new Date().toISOString().slice(0, 10));
+      setShowForm(false);
+    });
   }
 
-  async function handleDelete(id: string) {
-    setEntries(entries.filter(e => e.id !== id));
-    await deleteSpendingEntry(id);
+  function handleDelete(id: string) {
+    setDeletingId(id);
+    startTransition(async () => {
+      await deleteSpendingEntry(id);
+      setEntries((prev) => prev.filter((e) => e.id !== id));
+      setDeletingId(null);
+    });
   }
 
-  async function changeMonth(dir: number) {
-    let newMonth = month + dir;
-    let newYear = year;
-    if (newMonth > 11) { newMonth = 0; newYear++; }
-    if (newMonth < 0) { newMonth = 11; newYear--; }
-    setMonth(newMonth);
-    setYear(newYear);
-    const newEntries = await getSpendingEntries(newMonth, newYear);
-    setEntries(newEntries);
-  }
-
-  const total = entries.reduce((a, b) => a + b.amount, 0);
-  const byCategory = categories.map(cat => ({
-    cat,
-    total: entries.filter(e => e.category === cat).reduce((a, b) => a + b.amount, 0),
-  })).filter(c => c.total > 0);
+  const progressColor =
+    pct >= 90 ? "var(--clr-danger)" : pct >= 70 ? "var(--clr-warning)" : "var(--clr-accent)";
+  const statusLabel =
+    pct >= 90 ? "Over budget" : pct >= 70 ? "Watch spending" : "On track";
+  const statusClass =
+    pct >= 90 ? "badge badge--danger" : pct >= 70 ? "badge badge--warning" : "badge badge--success";
 
   return (
-    <div>
-      <div style={{ display: "flex", gap: "8px", marginBottom: "1rem", flexWrap: "wrap" }}>
-        <input
-          value={label}
-          onChange={e => setLabel(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && handleAdd()}
-          placeholder="Description..."
-          style={{ flex: 1, minWidth: "120px", padding: "8px 12px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "15px" }}
-        />
-        <input
-          type="number"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-          placeholder="£0.00"
-          min="0"
-          step="0.01"
-          style={{ width: "90px", padding: "8px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px" }}
-        />
-        <select
-          value={category}
-          onChange={e => setCategory(e.target.value)}
-          style={{ padding: "8px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px" }}
-        >
-          {categories.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <input
-          type="date"
-          value={date}
-          onChange={e => setDate(e.target.value)}
-          style={{ padding: "8px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px" }}
-        />
-        <button
-          onClick={handleAdd}
-          disabled={loading}
-          style={{ padding: "8px 16px", borderRadius: "8px", background: "#1D9E75", color: "#fff", border: "none", fontSize: "15px", cursor: "pointer" }}
-        >
-          {loading ? "..." : "Add"}
-        </button>
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
-        <button onClick={() => changeMonth(-1)} style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "4px 12px", cursor: "pointer", fontSize: "18px" }}>‹</button>
-        <span style={{ fontWeight: 500, fontSize: "15px" }}>{monthNames[month]} {year}</span>
-        <button onClick={() => changeMonth(1)} style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "4px 12px", cursor: "pointer", fontSize: "18px" }}>›</button>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "1rem" }}>
-        <div style={{ background: "#f9fafb", borderRadius: "8px", padding: "12px" }}>
-          <p style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Total spent</p>
-          <p style={{ fontSize: "22px", fontWeight: 500 }}>£{total.toFixed(2)}</p>
+      {/* Summary card */}
+      <div className="card">
+        <div className="widget-label-row">
+          <span className="widget-label" style={{ marginBottom: 0 }}>
+            {new Date(initialYear, initialMonth).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
+          </span>
+          <span className={statusClass}>{statusLabel}</span>
         </div>
-        <div style={{ background: "#f9fafb", borderRadius: "8px", padding: "12px" }}>
-          <p style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>Transactions</p>
-          <p style={{ fontSize: "22px", fontWeight: 500 }}>{entries.length}</p>
-        </div>
-      </div>
 
-      {byCategory.length > 0 && (
-        <div style={{ marginBottom: "1rem" }}>
-          {byCategory.sort((a, b) => b.total - a.total).map(({ cat, total: catTotal }) => (
-            <div key={cat} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: catColors[cat], flexShrink: 0 }} />
-              <span style={{ fontSize: "13px", width: "70px", color: "#374151" }}>{cat}</span>
-              <div style={{ flex: 1, background: "#e5e7eb", borderRadius: "4px", height: "6px" }}>
-                <div style={{ width: `${(catTotal / total) * 100}%`, height: "6px", borderRadius: "4px", background: catColors[cat] }} />
+        <div className="spend-widget__amounts">
+          <div>
+            <div className="spend-widget__total">{formatAmount(totalSpent)}</div>
+            <div className="spend-widget__sub">of {formatAmount(MONTHLY_BUDGET)} budget</div>
+          </div>
+          <div className="spend-widget__right">
+            <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--clr-ink-2)" }}>
+              {formatAmount(remaining)} left
+            </div>
+          </div>
+        </div>
+
+        <div className="progress-track">
+          <div className="progress-fill" style={{ width: `${pct}%`, background: progressColor }} />
+        </div>
+
+        {/* Category breakdown */}
+        {topCategories.length > 0 && (
+          <div
+            style={{
+              marginTop: "16px",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "8px",
+            }}
+          >
+            {topCategories.map(([cat, total]) => (
+              <div
+                key={cat}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "8px 10px",
+                  background: "var(--clr-bg-alt)",
+                  borderRadius: "var(--r-sm)",
+                }}
+              >
+                <CategoryDot category={cat} />
+                <div style={{ minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--clr-ink-3)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {cat}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: 500,
+                      color: "var(--clr-ink)",
+                      fontFamily: "var(--font-mono)",
+                    }}
+                  >
+                    {formatAmount(total)}
+                  </div>
+                </div>
               </div>
-              <span style={{ fontSize: "13px", fontWeight: 500, minWidth: "60px", textAlign: "right" }}>£{catTotal.toFixed(2)}</span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add entry form */}
+      {showForm ? (
+        <div className="card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div className="widget-label">New entry</div>
+
+          <input
+            type="text"
+            placeholder="Description"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            style={inputStyle}
+          />
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <input
+              type="number"
+              placeholder="Amount (£)"
+              value={amount}
+              min="0.01"
+              step="0.01"
+              onChange={(e) => setAmount(e.target.value)}
+              style={inputStyle}
+            />
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              style={inputStyle}
+            />
+          </div>
+
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            style={inputStyle}
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+
+          {formError && (
+            <div style={{ fontSize: "12px", color: "var(--clr-danger)" }}>{formError}</div>
+          )}
+
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              onClick={handleAdd}
+              disabled={isPending}
+              style={{
+                flex: 1,
+                padding: "11px",
+                background: "var(--clr-ink)",
+                color: "var(--clr-bg)",
+                border: "none",
+                borderRadius: "var(--r-md)",
+                fontSize: "14px",
+                fontWeight: 500,
+                cursor: isPending ? "not-allowed" : "pointer",
+                opacity: isPending ? 0.6 : 1,
+                fontFamily: "var(--font-body)",
+              }}
+            >
+              {isPending ? "Saving…" : "Add entry"}
+            </button>
+            <button
+              onClick={() => { setShowForm(false); setFormError(""); }}
+              style={{
+                padding: "11px 16px",
+                background: "transparent",
+                color: "var(--clr-ink-3)",
+                border: "1px solid var(--clr-border)",
+                borderRadius: "var(--r-md)",
+                fontSize: "14px",
+                cursor: "pointer",
+                fontFamily: "var(--font-body)",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setShowForm(true)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            width: "100%",
+            padding: "12px",
+            background: "var(--clr-surface)",
+            border: "1px dashed var(--clr-border)",
+            borderRadius: "var(--r-lg)",
+            fontSize: "14px",
+            fontWeight: 500,
+            color: "var(--clr-ink-3)",
+            cursor: "pointer",
+            fontFamily: "var(--font-body)",
+            transition: "border-color var(--dur) var(--ease), color var(--dur) var(--ease)",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--clr-accent)";
+            (e.currentTarget as HTMLButtonElement).style.color = "var(--clr-accent)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--clr-border)";
+            (e.currentTarget as HTMLButtonElement).style.color = "var(--clr-ink-3)";
+          }}
+        >
+          <PlusIcon size={16} strokeWidth={2} />
+          Add spending entry
+        </button>
+      )}
+
+      {/* Entries list */}
+      {entries.length === 0 ? (
+        <div
+          className="card"
+          style={{
+            textAlign: "center",
+            padding: "32px 20px",
+            color: "var(--clr-ink-3)",
+            fontSize: "14px",
+          }}
+        >
+          <div style={{ margin: "0 auto 10px", display: "block", opacity: 0.4 }}>
+            <WalletIcon size={28} strokeWidth={1.5} />
+          </div>
+          No entries this month yet.
+        </div>
+      ) : (
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          {entries.map((entry, i) => (
+            <div
+              key={entry.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "14px 18px",
+                borderBottom: i < entries.length - 1 ? "1px solid var(--clr-border-subtle)" : "none",
+                opacity: deletingId === entry.id ? 0.4 : 1,
+                transition: "opacity 200ms",
+              }}
+            >
+              <CategoryDot category={entry.category} />
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: "14px",
+                    color: "var(--clr-ink)",
+                    fontWeight: 500,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {entry.label}
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "var(--clr-ink-3)",
+                    display: "flex",
+                    gap: "6px",
+                    alignItems: "center",
+                    marginTop: "2px",
+                  }}
+                >
+                  <span>{entry.category}</span>
+                  <span style={{ opacity: 0.4 }}>·</span>
+                  <span>{formatDate(entry.date)}</span>
+                  {entry.addedBy && (
+                    <>
+                      <span style={{ opacity: 0.4 }}>·</span>
+                      <span>{entry.addedBy.name ?? entry.addedBy.email.split("@")[0]}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
+                <span
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    fontFamily: "var(--font-mono)",
+                    color: "var(--clr-ink)",
+                  }}
+                >
+                  {formatAmount(entry.amount)}
+                </span>
+                <button
+                  onClick={() => handleDelete(entry.id)}
+                  disabled={!!deletingId}
+                  title="Delete"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--clr-ink-4)",
+                    padding: "4px",
+                    lineHeight: 1,
+                    fontSize: "16px",
+                    borderRadius: "4px",
+                    transition: "color var(--dur) var(--ease)",
+                  }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLButtonElement).style.color = "var(--clr-danger)")
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLButtonElement).style.color = "var(--clr-ink-4)")
+                  }
+                >
+                  ×
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
-
-      {entries.length === 0 ? (
-        <p style={{ textAlign: "center", color: "#9ca3af", marginTop: "2rem" }}>No spending this month</p>
-      ) : (
-        entries.map(entry => (
-          <div key={entry.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", background: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px", marginBottom: "6px" }}>
-            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: catColors[entry.category], flexShrink: 0 }} />
-            <span style={{ flex: 1, fontSize: "14px" }}>{entry.label}</span>
-            <span style={{ fontSize: "12px", color: "#6b7280" }}>{new Date(entry.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
-            <span style={{ fontWeight: 500, fontSize: "15px" }}>£{entry.amount.toFixed(2)}</span>
-            <button onClick={() => handleDelete(entry.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "16px" }}>✕</button>
-          </div>
-        ))
-      )}
     </div>
   );
 }
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "10px 12px",
+  background: "var(--clr-bg-alt)",
+  border: "1px solid var(--clr-border)",
+  borderRadius: "var(--r-sm)",
+  fontSize: "14px",
+  color: "var(--clr-ink)",
+  fontFamily: "var(--font-body)",
+  outline: "none",
+};

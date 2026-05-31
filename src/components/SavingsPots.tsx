@@ -76,7 +76,6 @@ function PotCard({
   return (
     <div
       style={{
-        background: "#fff",
         border: "0.5px solid #E5E5E5",
         borderRadius: "16px",
         padding: "18px",
@@ -86,6 +85,7 @@ function PotCard({
         opacity: isPending ? 0.6 : 1,
         transition: "opacity 0.2s",
       }}
+      className="card"
     >
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
@@ -95,7 +95,6 @@ function PotCard({
               width: "38px",
               height: "38px",
               borderRadius: "10px",
-              background: c.bg,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -105,7 +104,7 @@ function PotCard({
             {pot.emoji}
           </div>
           <div>
-            <div style={{ fontSize: "15px", fontWeight: 500, color: "#1a1a1a" }}>{pot.name}</div>
+            <div style={{ fontSize: "15px", fontWeight: 500, color: "#e6e6e6" }}>{pot.name}</div>
             <div style={{ fontSize: "12px", color: "#888", marginTop: "1px" }}>
               {isComplete ? "🎉 Goal reached!" : `£${remaining.toLocaleString("en-GB", { minimumFractionDigits: 2 })} to go`}
             </div>
@@ -147,7 +146,7 @@ function PotCard({
 
       {/* Amounts */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <span style={{ fontSize: "20px", fontWeight: 500, color: "#1a1a1a" }}>
+        <span style={{ fontSize: "20px", fontWeight: 500, color: "#e6e6e6" }}>
           £{pot.currentAmount.toLocaleString("en-GB", { minimumFractionDigits: 2 })}
         </span>
         <span style={{ fontSize: "13px", color: "#888" }}>
@@ -224,12 +223,12 @@ function ContributeModal({
     >
       <div
         style={{
-          background: "#fff",
           borderRadius: "20px 20px 0 0",
           padding: "24px 20px 36px",
           width: "100%",
           maxWidth: "480px",
         }}
+        className="card"  
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
           <div>
@@ -356,7 +355,6 @@ function CreatePotModal({ onClose }: { onClose: () => void }) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.4)",
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "center",
@@ -366,12 +364,12 @@ function CreatePotModal({ onClose }: { onClose: () => void }) {
     >
       <div
         style={{
-          background: "#fff",
           borderRadius: "20px 20px 0 0",
           padding: "24px 20px 36px",
           width: "100%",
           maxWidth: "480px",
         }}
+        className="card"
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
           <div style={{ fontSize: "17px", fontWeight: 500 }}>New savings pot</div>
@@ -513,7 +511,6 @@ export default function SavingsPots({ initialPots }: { initialPots: SavingsPot[]
       {pots.length > 0 && (
         <div
           style={{
-            background: "#fff",
             border: "0.5px solid #E5E5E5",
             borderRadius: "16px",
             padding: "18px",
@@ -522,13 +519,14 @@ export default function SavingsPots({ initialPots }: { initialPots: SavingsPot[]
             justifyContent: "space-between",
             alignItems: "center",
           }}
+          className="card"
         >
           <div>
-            <div style={{ fontSize: "12px", color: "#888", marginBottom: "4px" }}>Total saved</div>
-            <div style={{ fontSize: "26px", fontWeight: 500, color: "#1a1a1a" }}>
+            <div style={{ fontSize: "12px", color: "#e6e6e6", marginBottom: "4px" }}>Total saved</div>
+            <div style={{ fontSize: "26px", fontWeight: 500, color: "#e6e6e6" }}>
               £{totalSaved.toLocaleString("en-GB", { minimumFractionDigits: 2 })}
             </div>
-            <div style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>
+            <div style={{ fontSize: "12px", color: "#e6e6e6", marginTop: "2px" }}>
               of £{totalTarget.toLocaleString("en-GB", { minimumFractionDigits: 2 })} across {pots.length} pot{pots.length !== 1 ? "s" : ""}
             </div>
           </div>
@@ -558,7 +556,7 @@ export default function SavingsPots({ initialPots }: { initialPots: SavingsPot[]
           }}
         >
           <div style={{ fontSize: "40px", marginBottom: "12px" }}>🏦</div>
-          <div style={{ fontSize: "16px", fontWeight: 500, color: "#1a1a1a", marginBottom: "6px" }}>
+          <div style={{ fontSize: "16px", fontWeight: 500, color: "#e6e6e6", marginBottom: "6px" }}>
             No savings pots yet
           </div>
           <div style={{ fontSize: "13px", lineHeight: 1.5 }}>

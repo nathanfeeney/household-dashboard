@@ -145,7 +145,7 @@ export async function updateSavingsPot(
 ): Promise<void> {
   await getSession();
 
-  await prisma.savingsPot.update({
+  await prisma.savingsPotModel.update({
     where: { id },
     data: updates,
   });

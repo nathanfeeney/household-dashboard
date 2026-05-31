@@ -3,15 +3,19 @@
 import { useEffect, useState } from 'react';
 
 export default function DateTime() {
-    const [dateTime, setDateTime] = useState<string>('');
+  const [dateTime, setDateTime] = useState<string>('');
 
-    useEffect(() => {
-        setDateTime(new Date().toLocaleString());
-        const interval = setInterval(() => {
-            setDateTime(new Date().toLocaleString());
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
+  useEffect(() => {
+    const fmt = () =>
+      new Date().toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      });
+    setDateTime(fmt());
+    const interval = setInterval(() => setDateTime(fmt()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
-    return <div>{dateTime}</div>;
+  return <div className="dashboard-datetime">{dateTime}</div>;
 }

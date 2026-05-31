@@ -43,7 +43,7 @@ export default function ShoppingList({ initialItems }: { initialItems: Item[] })
   const done = items.filter(i => i.done);
 
   return (
-    <div>
+    <div className="card">
       <div style={{ display: "flex", gap: "8px", marginBottom: "1rem" }}>
         <input
           value={label}

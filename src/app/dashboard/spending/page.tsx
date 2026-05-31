@@ -8,8 +8,8 @@ export default async function SpendingPage() {
   const entries = await getSpendingEntries(month, year);
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1 style={{ fontSize: "20px", fontWeight: 600, marginBottom: "1rem" }}>Spending</h1>
+    <div className="sub-page">
+      <h1 className="page-title" style={{ marginBottom: "1rem" }}>Spending</h1>
       <SpendingTracker initialEntries={entries} initialMonth={month} initialYear={year} />
     </div>
   );
