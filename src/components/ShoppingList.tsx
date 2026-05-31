@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { addShoppingItem, toggleShoppingItem, deleteShoppingItem } from "@/app/actions/shopping";
 
 type Item = {
@@ -12,21 +11,28 @@ type Item = {
 };
 
 const categories = ["food", "home", "personal", "other"];
+const categoryColors: Record<string, { bg: string; text: string }> = {
+  food:     { bg: "#3066be7c", text: "#fff" }, 
+  home:     { bg: "#6d9dc579", text: "#fff" }, 
+  personal: { bg: "#d3658281", text: "#fff" }, 
+  other:    { bg: "#52b7887f", text: "#fff" }, 
+};
 
 export default function ShoppingList({ initialItems }: { initialItems: Item[] }) {
   const [items, setItems] = useState(initialItems);
   const [label, setLabel] = useState("");
   const [category, setCategory] = useState("food");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   async function handleAdd() {
     if (!label.trim()) return;
     setLoading(true);
-    await addShoppingItem(label.trim(), category);
+    const newItem = await addShoppingItem(label.trim(), category) as Item | undefined;
+    if (newItem) {
+      setItems(prev => [...prev, newItem]);
+    }
     setLabel("");
     setLoading(false);
-    router.refresh();
   }
 
   async function handleToggle(id: string, done: boolean) {
@@ -69,11 +75,11 @@ export default function ShoppingList({ initialItems }: { initialItems: Item[] })
       </div>
 
       {active.map(item => (
-        <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", background: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px", marginBottom: "6px" }}>
+        <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", background: categoryColors[item.category]?.bg ?? "#F3F4F6",  color: categoryColors[item.category]?.text ?? "#374151", border: "1px solid #ebe5e5", borderRadius: "8px", marginBottom: "6px" }}>
           <input type="checkbox" checked={item.done} onChange={() => handleToggle(item.id, item.done)} />
           <span style={{ flex: 1, fontSize: "14px" }}>{item.label}</span>
           <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "100px", background: "#E1F5EE", color: "#0F6E56" }}>{item.category}</span>
-          <button onClick={() => handleDelete(item.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "16px" }}>✕</button>
+          <button onClick={() => handleDelete(item.id)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "16px" }}>✕</button>
         </div>
       ))}
 

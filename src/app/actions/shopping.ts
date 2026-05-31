@@ -23,10 +23,10 @@ export async function getShoppingItems() {
 
 export async function addShoppingItem(label: string, category: string) {
   const householdId = await getHouseholdId();
-  await prisma.shoppingItem.create({
+  const newItem = await prisma.shoppingItem.create({
     data: { label, category, householdId },
   });
-  revalidatePath("/dashboard/shopping");
+  return newItem;
 }
 
 export async function toggleShoppingItem(id: string, done: boolean) {

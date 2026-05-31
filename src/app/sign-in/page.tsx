@@ -8,7 +8,7 @@ export default function SignInPage() {
     <div className="signin-page">
       <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
         <LeafIcon size={28} strokeWidth={1.5}  />
-        <h1 className="signin-logo">Hearth</h1>
+        <h1 className="signin-logo">Hoos</h1>
       </div>
       <p className="signin-subtitle">Your household, organised.</p>
 
