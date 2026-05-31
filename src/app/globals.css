@@ -108,7 +108,7 @@ body {
   background: var(--clr-surface);
   border: 1px solid var(--clr-border);
   border-radius: var(--r-lg);
-  padding: 20px;
+  padding: 20px 10px;
   box-shadow: var(--shadow-card);
   transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
@@ -592,7 +592,7 @@ body {
 
 /* ─── Spending page ──────────────────────────────────────────────── */
 .sub-page {
-  padding: 20px 16px;
+  padding: 20px 6px;
 }
 
 .sub-page__header {
