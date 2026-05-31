@@ -8,21 +8,61 @@ export default function HouseholdPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [mode, setMode] = useState<"create" | "join">("create");
 
+  const inputStyle: React.CSSProperties = {
+    padding: "10px 12px",
+    borderRadius: "var(--r-sm)",
+    border: "1px solid var(--clr-border)",
+    fontSize: "15px",
+    background: "var(--clr-bg-alt)",
+    color: "var(--clr-ink)",
+    fontFamily: "var(--font-body)",
+    outline: "none",
+    width: "100%",
+  };
+
   return (
     <div style={{ maxWidth: "480px", margin: "0 auto", padding: "2rem 1rem" }}>
-      <h1 style={{ fontSize: "22px", fontWeight: 600, marginBottom: "0.5rem" }}>Welcome</h1>
-      <p style={{ color: "#6b7280", marginBottom: "2rem" }}>Set up your household to get started</p>
+      <h1 style={{ fontFamily: "var(--font-display)", fontSize: "28px", fontWeight: 400, color: "var(--clr-ink)", marginBottom: "0.5rem" }}>
+        Welcome
+      </h1>
+      <p style={{ color: "var(--clr-ink-3)", marginBottom: "2rem", fontSize: "14px" }}>
+        Set up your household to get started
+      </p>
 
       <div style={{ display: "flex", gap: "8px", marginBottom: "1.5rem" }}>
         <button
           onClick={() => setMode("create")}
-          style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid #e5e7eb", background: mode === "create" ? "#1D9E75" : "#fff", color: mode === "create" ? "#fff" : "#374151", cursor: "pointer", fontWeight: 500 }}
+          style={{
+            flex: 1,
+            padding: "10px",
+            borderRadius: "var(--r-sm)",
+            border: "1px solid var(--clr-border)",
+            background: mode === "create" ? "var(--clr-ink)" : "var(--clr-surface)",
+            color: mode === "create" ? "var(--clr-bg)" : "var(--clr-ink-2)",
+            cursor: "pointer",
+            fontWeight: 500,
+            fontSize: "14px",
+            fontFamily: "var(--font-body)",
+            transition: "all var(--dur) var(--ease)",
+          }}
         >
           Create household
         </button>
         <button
           onClick={() => setMode("join")}
-          style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid #e5e7eb", background: mode === "join" ? "#1D9E75" : "#fff", color: mode === "join" ? "#fff" : "#374151", cursor: "pointer", fontWeight: 500 }}
+          style={{
+            flex: 1,
+            padding: "10px",
+            borderRadius: "var(--r-sm)",
+            border: "1px solid var(--clr-border)",
+            background: mode === "join" ? "var(--clr-ink)" : "var(--clr-surface)",
+            color: mode === "join" ? "var(--clr-bg)" : "var(--clr-ink-2)",
+            cursor: "pointer",
+            fontWeight: 500,
+            fontSize: "14px",
+            fontFamily: "var(--font-body)",
+            transition: "all var(--dur) var(--ease)",
+          }}
         >
           Join household
         </button>
@@ -34,11 +74,11 @@ export default function HouseholdPage() {
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="Household name e.g. The Smiths"
-            style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "15px" }}
+            style={inputStyle}
           />
           <button
             onClick={() => createHousehold(name)}
-            style={{ padding: "10px", borderRadius: "8px", background: "#1D9E75", color: "#fff", border: "none", fontSize: "15px", cursor: "pointer", fontWeight: 500 }}
+            className="btn btn--primary"
           >
             Create
           </button>
@@ -49,11 +89,11 @@ export default function HouseholdPage() {
             value={inviteCode}
             onChange={e => setInviteCode(e.target.value)}
             placeholder="Enter invite code"
-            style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "15px" }}
+            style={inputStyle}
           />
           <button
             onClick={() => joinHousehold(inviteCode)}
-            style={{ padding: "10px", borderRadius: "8px", background: "#1D9E75", color: "#fff", border: "none", fontSize: "15px", cursor: "pointer", fontWeight: 500 }}
+            className="btn btn--primary"
           >
             Join
           </button>

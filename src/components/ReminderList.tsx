@@ -19,10 +19,18 @@ function daysUntil(date: Date) {
 }
 
 function DueBadge({ days }: { days: number }) {
-  if (days < 0) return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "100px", background: "#FCEBEB", color: "#A32D2D" }}>Overdue</span>;
-  if (days === 0) return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "100px", background: "#FAEEDA", color: "#854F0B" }}>Today</span>;
-  if (days <= 30) return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "100px", background: "#FAEEDA", color: "#854F0B" }}>In {days} days</span>;
-  return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "100px", background: "#EAF3DE", color: "#3B6D11" }}>In {days} days</span>;
+  if (days < 0) return (
+    <span className="badge badge--danger">Overdue</span>
+  );
+  if (days === 0) return (
+    <span className="badge badge--warning">Today</span>
+  );
+  if (days <= 30) return (
+    <span className="badge badge--warning">In {days} days</span>
+  );
+  return (
+    <span className="badge badge--success">In {days} days</span>
+  );
 }
 
 export default function ReminderList({ initialReminders }: { initialReminders: Reminder[] }) {
@@ -50,6 +58,17 @@ export default function ReminderList({ initialReminders }: { initialReminders: R
   const upcoming = reminders.filter(r => daysUntil(r.dueDate) >= 0);
   const overdue = reminders.filter(r => daysUntil(r.dueDate) < 0);
 
+  const inputStyle: React.CSSProperties = {
+    padding: "10px 12px",
+    borderRadius: "var(--r-sm)",
+    border: "1px solid var(--clr-border)",
+    fontSize: "14px",
+    background: "var(--clr-bg-alt)",
+    color: "var(--clr-ink)",
+    fontFamily: "var(--font-body)",
+    outline: "none",
+  };
+
   return (
     <div>
       <div style={{ display: "flex", gap: "8px", marginBottom: "1rem", flexWrap: "wrap" }}>
@@ -58,32 +77,65 @@ export default function ReminderList({ initialReminders }: { initialReminders: R
           onChange={e => setLabel(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleAdd()}
           placeholder="Reminder name..."
-          style={{ flex: 1, minWidth: "150px", padding: "8px 12px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "15px" }}
+          style={{ ...inputStyle, flex: 1, minWidth: "150px" }}
         />
         <input
           type="date"
           value={dueDate}
           onChange={e => setDueDate(e.target.value)}
-          style={{ padding: "8px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px" }}
+          style={inputStyle}
         />
         <button
           onClick={handleAdd}
           disabled={loading}
-          style={{ padding: "8px 16px", borderRadius: "8px", background: "#1D9E75", color: "#fff", border: "none", fontSize: "15px", cursor: "pointer" }}
+          style={{
+            padding: "10px 16px",
+            borderRadius: "var(--r-sm)",
+            background: "var(--clr-ink)",
+            color: "var(--clr-bg)",
+            border: "none",
+            fontSize: "14px",
+            fontWeight: 500,
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.6 : 1,
+            fontFamily: "var(--font-body)",
+          }}
         >
-          {loading ? "..." : "Add"}
+          {loading ? "…" : "Add"}
         </button>
       </div>
 
       {overdue.length > 0 && (
         <>
-          <p style={{ fontSize: "12px", color: "#A32D2D", margin: "1rem 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Overdue</p>
+          <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.8px", color: "var(--clr-danger)", margin: "1rem 0 8px", textTransform: "uppercase" }}>
+            Overdue
+          </p>
           {overdue.map(reminder => (
-            <div key={reminder.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", background: "#fff", border: "1px solid #f7c1c1", borderRadius: "8px", marginBottom: "6px" }}>
-              <span style={{ flex: 1, fontSize: "14px" }}>{reminder.label}</span>
-              <span style={{ fontSize: "12px", color: "#6b7280" }}>{new Date(reminder.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+            <div
+              key={reminder.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px 12px",
+                background: "var(--clr-danger-bg)",
+                border: "1px solid var(--clr-danger)",
+                borderRadius: "var(--r-sm)",
+                marginBottom: "6px",
+                opacity: 0.85,
+              }}
+            >
+              <span style={{ flex: 1, fontSize: "14px", color: "var(--clr-ink)" }}>{reminder.label}</span>
+              <span style={{ fontSize: "12px", color: "var(--clr-ink-3)", fontFamily: "var(--font-mono)" }}>
+                {new Date(reminder.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+              </span>
               <DueBadge days={daysUntil(reminder.dueDate)} />
-              <button onClick={() => handleDelete(reminder.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "16px" }}>✕</button>
+              <button
+                onClick={() => handleDelete(reminder.id)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--clr-ink-4)", fontSize: "16px", lineHeight: 1, padding: "2px 4px", borderRadius: "4px", transition: "color var(--dur) var(--ease)" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "var(--clr-danger)")}
+                onMouseLeave={e => (e.currentTarget.style.color = "var(--clr-ink-4)")}
+              >×</button>
             </div>
           ))}
         </>
@@ -91,20 +143,45 @@ export default function ReminderList({ initialReminders }: { initialReminders: R
 
       {upcoming.length > 0 && (
         <>
-          {overdue.length > 0 && <p style={{ fontSize: "12px", color: "#9ca3af", margin: "1rem 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Upcoming</p>}
+          {overdue.length > 0 && (
+            <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.8px", color: "var(--clr-ink-3)", margin: "1rem 0 8px", textTransform: "uppercase" }}>
+              Upcoming
+            </p>
+          )}
           {upcoming.map(reminder => (
-            <div key={reminder.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", background: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px", marginBottom: "6px" }}>
-              <span style={{ flex: 1, fontSize: "14px" }}>{reminder.label}</span>
-              <span style={{ fontSize: "12px", color: "#6b7280" }}>{new Date(reminder.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+            <div
+              key={reminder.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px 12px",
+                background: "var(--clr-surface)",
+                border: "1px solid var(--clr-border)",
+                borderRadius: "var(--r-sm)",
+                marginBottom: "6px",
+              }}
+            >
+              <span style={{ flex: 1, fontSize: "14px", color: "var(--clr-ink)" }}>{reminder.label}</span>
+              <span style={{ fontSize: "12px", color: "var(--clr-ink-3)", fontFamily: "var(--font-mono)" }}>
+                {new Date(reminder.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+              </span>
               <DueBadge days={daysUntil(reminder.dueDate)} />
-              <button onClick={() => handleDelete(reminder.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "16px" }}>✕</button>
+              <button
+                onClick={() => handleDelete(reminder.id)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--clr-ink-4)", fontSize: "16px", lineHeight: 1, padding: "2px 4px", borderRadius: "4px", transition: "color var(--dur) var(--ease)" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "var(--clr-danger)")}
+                onMouseLeave={e => (e.currentTarget.style.color = "var(--clr-ink-4)")}
+              >×</button>
             </div>
           ))}
         </>
       )}
 
       {reminders.length === 0 && (
-        <p style={{ textAlign: "center", marginTop: "2rem" }}>No reminders set</p>
+        <p style={{ textAlign: "center", color: "var(--clr-ink-3)", marginTop: "2rem", fontSize: "14px" }}>
+          No reminders set
+        </p>
       )}
     </div>
   );

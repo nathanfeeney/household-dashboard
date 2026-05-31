@@ -46,6 +46,17 @@ export default function TodoList({ initialItems }: { initialItems: Item[] }) {
   const active = items.filter(i => !i.done);
   const done = items.filter(i => i.done);
 
+  const inputStyle: React.CSSProperties = {
+    padding: "10px 12px",
+    borderRadius: "var(--r-sm)",
+    border: "1px solid var(--clr-border)",
+    fontSize: "14px",
+    background: "var(--clr-bg-alt)",
+    color: "var(--clr-ink)",
+    fontFamily: "var(--font-body)",
+    outline: "none",
+  };
+
   return (
     <div className="card">
       <div style={{ display: "flex", gap: "8px", marginBottom: "1rem" }}>
@@ -54,48 +65,96 @@ export default function TodoList({ initialItems }: { initialItems: Item[] }) {
           onChange={e => setLabel(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleAdd()}
           placeholder="Add task..."
-          style={{ flex: 1, padding: "8px 12px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "15px" }}
+          style={{ ...inputStyle, flex: 1 }}
         />
         <select
           value={assignedTo}
           onChange={e => setAssignedTo(e.target.value)}
-          style={{ padding: "8px", borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "14px" }}
+          style={inputStyle}
         >
           {assignees.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
         </select>
         <button
           onClick={handleAdd}
           disabled={loading}
-          style={{ padding: "8px 16px", borderRadius: "8px", background: "#1D9E75", color: "#fff", border: "none", fontSize: "15px", cursor: "pointer" }}
+          style={{
+            padding: "10px 16px",
+            borderRadius: "var(--r-sm)",
+            background: "var(--clr-ink)",
+            color: "var(--clr-bg)",
+            border: "none",
+            fontSize: "14px",
+            fontWeight: 500,
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.6 : 1,
+            fontFamily: "var(--font-body)",
+          }}
         >
-          {loading ? "..." : "Add"}
+          {loading ? "…" : "Add"}
         </button>
       </div>
 
       {active.map(item => (
-        <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", background: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px", marginBottom: "6px" }}>
+        <div
+          key={item.id}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            padding: "10px 12px",
+            background: "var(--clr-surface)",
+            border: "1px solid var(--clr-border)",
+            borderRadius: "var(--r-sm)",
+            marginBottom: "6px",
+          }}
+        >
           <input type="checkbox" checked={item.done} onChange={() => handleToggle(item.id, item.done)} />
-          <span style={{ flex: 1, fontSize: "14px", color: "#626262" }}>{item.label}</span>
-          <span style={{ fontSize: "11px", color:"#313131" }}>{item.assignedTo}</span>
-          <button onClick={() => handleDelete(item.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "16px" }}>✕</button>
+          <span style={{ flex: 1, fontSize: "14px", color: "var(--clr-ink)" }}>{item.label}</span>
+          <span style={{ fontSize: "11px", color: "var(--clr-ink-3)" }}>{item.assignedTo}</span>
+          <button
+            onClick={() => handleDelete(item.id)}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--clr-ink-4)", fontSize: "16px", lineHeight: 1, padding: "2px 4px", borderRadius: "4px", transition: "color var(--dur) var(--ease)" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "var(--clr-danger)")}
+            onMouseLeave={e => (e.currentTarget.style.color = "var(--clr-ink-4)")}
+          >×</button>
         </div>
       ))}
 
       {done.length > 0 && (
         <>
-          <p style={{ fontSize: "12px", color: "#9ca3af", margin: "1rem 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Done ({done.length})</p>
+          <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.8px", color: "var(--clr-ink-3)", margin: "1rem 0 8px", textTransform: "uppercase" }}>
+            Done ({done.length})
+          </p>
           {done.map(item => (
-            <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", background: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px", marginBottom: "6px", opacity: 0.5 }}>
+            <div
+              key={item.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px 12px",
+                background: "var(--clr-surface)",
+                border: "1px solid var(--clr-border-subtle)",
+                borderRadius: "var(--r-sm)",
+                marginBottom: "6px",
+                opacity: 0.5,
+              }}
+            >
               <input type="checkbox" checked={item.done} onChange={() => handleToggle(item.id, item.done)} />
-              <span style={{ flex: 1, fontSize: "14px", textDecoration: "line-through" }}>{item.label}</span>
-              <button onClick={() => handleDelete(item.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "16px" }}>✕</button>
+              <span style={{ flex: 1, fontSize: "14px", color: "var(--clr-ink)", textDecoration: "line-through" }}>{item.label}</span>
+              <button
+                onClick={() => handleDelete(item.id)}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--clr-ink-4)", fontSize: "16px" }}
+              >×</button>
             </div>
           ))}
         </>
       )}
 
       {items.length === 0 && (
-        <p style={{ textAlign: "center", color: "#9ca3af", marginTop: "2rem" }}>No tasks yet</p>
+        <p style={{ textAlign: "center", color: "var(--clr-ink-3)", marginTop: "2rem", fontSize: "14px" }}>
+          No tasks yet
+        </p>
       )}
     </div>
   );
