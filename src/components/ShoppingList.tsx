@@ -10,14 +10,17 @@ type Item = {
   done: boolean;
 };
 
-const categories = ["food", "home", "personal", "other"];
+const categories = ["tesco", "morrisons", "asda", "marks", "pets", "sainsbury", "any"];
 
 // Category badge colours using the site's existing palette
 const categoryColors: Record<string, { bg: string; text: string }> = {
-  food:     { bg: "var(--clr-accent-light)", text: "var(--clr-accent)" },
-  home:     { bg: "#E6F1FB", text: "#0C447C" },
-  personal: { bg: "#F8E6F0", text: "#7B1A65" },
-  other:    { bg: "var(--clr-bg-alt)", text: "var(--clr-ink-2)" },
+  tesco:     { bg: "#D6E4F5", text: "#00539F" },   // Tesco blue
+  morrisons: { bg: "#FFF8D6", text: "#005828" },   // Morrisons yellow bg, green text
+  asda:      { bg: "#E8F5D6", text: "#4A7C0F" },   // Asda green
+  marks:     { bg: "#D6EDE6", text: "#00593E" },   // M&S holly green
+  pets:      { bg: "#EFE0F8", text: "#5A1E7A" },   // Pets at Home purple
+  sainsbury: { bg: "#FFF0D6", text: "#E85D00" },   // Sainsbury's orange
+  any:       { bg: "#ffe2feee", text: "#440042" },
 };
 
 const inputStyle: React.CSSProperties = {
@@ -34,7 +37,7 @@ const inputStyle: React.CSSProperties = {
 export default function ShoppingList({ initialItems }: { initialItems: Item[] }) {
   const [items, setItems] = useState(initialItems);
   const [label, setLabel] = useState("");
-  const [category, setCategory] = useState("food");
+  const [category, setCategory] = useState("any");
   const [loading, setLoading] = useState(false);
 
   async function handleAdd() {
@@ -116,12 +119,12 @@ export default function ShoppingList({ initialItems }: { initialItems: Item[] })
           <span style={{ flex: 1, fontSize: "14px", color: "var(--clr-ink)" }}>{item.label}</span>
           <span
             style={{
-              fontSize: "11px",
+              fontSize: "13px",
               padding: "2px 8px",
               borderRadius: "var(--r-full)",
               background: categoryColors[item.category]?.bg ?? "var(--clr-bg-alt)",
               color: categoryColors[item.category]?.text ?? "var(--clr-ink-2)",
-              fontWeight: 500,
+              fontWeight: 600,
             }}
           >
             {item.category}
