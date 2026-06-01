@@ -63,7 +63,7 @@ export default function ShoppingList({ initialItems }: { initialItems: Item[] })
 
   return (
     <div className="card">
-      <div style={{ display: "flex", gap: "8px", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", gap: "8px", marginBottom: "1rem", flex-wrap:"wrap" }}>
         <input
           value={label}
           onChange={e => setLabel(e.target.value)}
