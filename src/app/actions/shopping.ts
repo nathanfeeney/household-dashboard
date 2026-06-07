@@ -21,6 +21,13 @@ export async function getShoppingItems() {
   });
 }
 
+export async function clearShoppingList() {
+  const householdId = await getHouseholdId();
+  await prisma.shoppingItem.deleteMany({ where: { householdId } });
+  revalidatePath("/dashboard/shopping");
+
+}
+
 export async function addShoppingItem(label: string, category: string) {
   const householdId = await getHouseholdId();
   const newItem = await prisma.shoppingItem.create({

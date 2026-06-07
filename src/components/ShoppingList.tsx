@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { addShoppingItem, toggleShoppingItem, deleteShoppingItem } from "@/app/actions/shopping";
+import { addShoppingItem, toggleShoppingItem, deleteShoppingItem, clearShoppingList } from "@/app/actions/shopping";
 
 type Item = {
   id: string;
@@ -59,6 +59,11 @@ export default function ShoppingList({ initialItems }: { initialItems: Item[] })
   async function handleDelete(id: string) {
     setItems(items.filter(i => i.id !== id));
     await deleteShoppingItem(id);
+  }
+
+  async function handleClear() {
+    setItems([]);
+    await clearShoppingList();
   }
 
   const active = items.filter(i => !i.done);
@@ -143,6 +148,19 @@ export default function ShoppingList({ initialItems }: { initialItems: Item[] })
           <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.8px", color: "var(--clr-ink-3)", margin: "1rem 0 8px", textTransform: "uppercase" }}>
             Done ({done.length})
           </p>
+          <button onClick={handleClear} style={{
+            padding: "5px 10px",
+            borderRadius: "var(--r-sm)",
+            background: "var(--clr-accent)",
+            color: "var(--clr-bg)",
+            border: "none",
+            fontSize: "14px",
+            fontWeight: 500,
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.6 : 1,
+            fontFamily: "var(--font-body)",
+          }}>Clear List</button>
+
           {done.map(item => (
             <div
               key={item.id}
@@ -173,7 +191,7 @@ export default function ShoppingList({ initialItems }: { initialItems: Item[] })
         <p style={{ textAlign: "center", color: "var(--clr-ink-3)", marginTop: "2rem", fontSize: "14px" }}>
           Your shopping list is empty
         </p>
-      )}
+      )} 
     </div>
   );
 }
