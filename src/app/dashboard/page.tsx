@@ -8,14 +8,13 @@ import { getSavingsPots } from "@/app/actions/savings";
 import { getShoppingItems } from "@/app/actions/shopping";
 import { getTodoItems } from "@/app/actions/todo";
 import { getReminders } from "@/app/actions/reminders";
+import { getFinanceSummary } from "@/app/actions/bills";
 import WelcomeMessage from "@/components/WelcomeMessage";
 import DateTime from "@/components/DateTime";
 import { SpendWidget } from "@/components/dashboard/SpendWidget";
 import { SavingsWidget } from "@/components/dashboard/SavingsWidget";
 import { TasksWidget } from "@/components/dashboard/TasksWidget";
 import { ShoppingWidget } from "@/components/dashboard/ShoppingWidget";
-
-const MONTHLY_BUDGET = 2800;
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -29,7 +28,7 @@ export default async function DashboardPage() {
   const year = now.getFullYear();
   const monthLabel = now.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 
-  const [spendingEntries, savingsPots, shoppingItems, todoItems, reminders, members] =
+  const [spendingEntries, savingsPots, shoppingItems, todoItems, reminders, members, financeSummary] =
     await Promise.all([
       getSpendingEntries(month, year),
       getSavingsPots(),
@@ -40,6 +39,7 @@ export default async function DashboardPage() {
         where: { householdId: household.id },
         select: { id: true, name: true, email: true },
       }),
+      getFinanceSummary(),
     ]);
 
   const totalSpent = spendingEntries.reduce(
@@ -116,7 +116,7 @@ export default async function DashboardPage() {
 
       <SpendWidget
         totalSpent={totalSpent}
-        budget={MONTHLY_BUDGET}
+        budget={financeSummary.disposable}
         month={monthLabel}
       />
 

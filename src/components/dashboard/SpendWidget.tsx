@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 
 type SpendWidgetProps = {
   totalSpent: number;
@@ -9,7 +10,8 @@ type SpendWidgetProps = {
 };
 
 export function SpendWidget({ totalSpent, budget, month }: SpendWidgetProps) {
-  const pct = budget > 0 ? Math.min((totalSpent / budget) * 100, 100) : 0;
+  const hasBudget = budget > 0;
+  const pct = hasBudget ? Math.min((totalSpent / budget) * 100, 100) : 0;
   const remaining = Math.max(budget - totalSpent, 0);
 
   const { fillColor, badgeClass, label } = useMemo(() => {
@@ -32,23 +34,33 @@ export function SpendWidget({ totalSpent, budget, month }: SpendWidgetProps) {
             £{totalSpent.toLocaleString("en-GB", { minimumFractionDigits: 2 })}
           </div>
           <div className="spend-widget__sub">
-            of £{budget.toLocaleString("en-GB", { minimumFractionDigits: 2 })} budget
+            {hasBudget ? (
+              <>of £{budget.toLocaleString("en-GB", { minimumFractionDigits: 2 })} to spend</>
+            ) : (
+              <Link href="/dashboard/bills" style={{ color: "var(--clr-accent)" }}>
+                Set up income &amp; bills →
+              </Link>
+            )}
           </div>
         </div>
-        <div className="spend-widget__right">
-          <span className={badgeClass}>{label}</span>
-          <div className="spend-widget__remaining">
-            £{remaining.toLocaleString("en-GB", { minimumFractionDigits: 2 })} left · {daysLeft}d
+        {hasBudget && (
+          <div className="spend-widget__right">
+            <span className={badgeClass}>{label}</span>
+            <div className="spend-widget__remaining">
+              £{remaining.toLocaleString("en-GB", { minimumFractionDigits: 2 })} left · {daysLeft}d
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      <div className="progress-track">
-        <div
-          className="progress-fill"
-          style={{ width: `${pct}%`, background: fillColor }}
-        />
-      </div>
+      {hasBudget && (
+        <div className="progress-track">
+          <div
+            className="progress-fill"
+            style={{ width: `${pct}%`, background: fillColor }}
+          />
+        </div>
+      )}
     </div>
   );
 }

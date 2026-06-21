@@ -19,57 +19,48 @@ const BAR_COLORS: Record<SavingsPot["color"], string> = {
 type SavingsWidgetProps = { pots: SavingsPot[] };
 
 export function SavingsWidget({ pots }: SavingsWidgetProps) {
-  const emptyState = (
-    <div className="card">
-      <div className="widget-label">Savings pots</div>
-      <div style={{ fontSize: "13px", color: "var(--clr-ink-3)", textAlign: "center", padding: "12px 0" }}>
-        No pots yet —{" "}
-        <Link className="card card--interactive" href="/dashboard/savings" style={{ color: "var(--clr-ink)", textDecoration: "underline" }}>
-          create one
-        </Link>
+  if (pots.length === 0) {
+    return (
+      <div className="card">
+        <div className="widget-label">Savings</div>
+        <div style={{ fontSize: "13px", color: "var(--clr-ink-3)", textAlign: "center", padding: "12px 0" }}>
+          No pots yet —{" "}
+          <Link href="/dashboard/savings" style={{ color: "var(--clr-ink)", textDecoration: "underline" }}>
+            add one
+          </Link>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
-  if (pots.length === 0) return emptyState;
-
-  const totalSaved  = pots.reduce((s, p) => s + p.currentAmount, 0);
-  const totalTarget = pots.reduce((s, p) => s + p.targetAmount,  0);
-  const displayPots = pots.slice(0, 3);
+  const totalSaved = pots.reduce((s, p) => s + p.currentAmount, 0);
+  const displayPots = pots.slice(0, 4);
 
   return (
     <Link href="/dashboard/savings" className="card card--interactive">
       <div className="widget-label-row">
-        <span className="widget-label" style={{ marginBottom: 0 }}>Savings pots</span>
-        <span style={{ fontSize: "12px", color: "var(--clr-ink-3)", fontFamily: "var(--font-mono)" }}>
-          £{totalSaved.toLocaleString("en-GB")} / £{totalTarget.toLocaleString("en-GB")}
+        <span className="widget-label" style={{ marginBottom: 0 }}>Total in savings</span>
+        <span style={{ fontSize: "16px", fontWeight: 500, color: "var(--clr-ink)", fontFamily: "var(--font-mono)" }}>
+          £{totalSaved.toLocaleString("en-GB", { minimumFractionDigits: 2 })}
         </span>
       </div>
 
-      <div className="savings-pot-row">
-        {displayPots.map((pot) => {
-          const pct = Math.min((pot.currentAmount / pot.targetAmount) * 100, 100);
-          return (
-            <div key={pot.id}>
-              <div className="savings-pot-item__header">
-                <span className="savings-pot-item__name">
-                  <span>{pot.emoji}</span>
-                  <span>{pot.name}</span>
-                </span>
-                <span className="savings-pot-item__pct">{Math.round(pct)}%</span>
-              </div>
-              <div className="progress-track" style={{ height: "4px" }}>
-                <div
-                  className="progress-fill"
-                  style={{ width: `${pct}%`, background: BAR_COLORS[pot.color] }}
-                />
-              </div>
-            </div>
-          );
-        })}
-        {pots.length > 3 && (
+      <div className="savings-pot-row" style={{ marginTop: "8px" }}>
+        {displayPots.map((pot) => (
+          <div key={pot.id} className="savings-pot-item__header" style={{ paddingTop: "4px" }}>
+            <span className="savings-pot-item__name">
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: BAR_COLORS[pot.color], display: "inline-block" }} />
+              <span>{pot.emoji}</span>
+              <span>{pot.name}</span>
+            </span>
+            <span style={{ fontSize: "13px", color: "var(--clr-ink-2)", fontFamily: "var(--font-mono)" }}>
+              £{pot.currentAmount.toLocaleString("en-GB", { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+        ))}
+        {pots.length > 4 && (
           <div style={{ fontSize: "12px", color: "var(--clr-ink-4)", textAlign: "center" }}>
-            +{pots.length - 3} more pot{pots.length - 3 !== 1 ? "s" : ""}
+            +{pots.length - 4} more pot{pots.length - 4 !== 1 ? "s" : ""}
           </div>
         )}
       </div>

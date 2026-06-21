@@ -71,21 +71,38 @@ model Household {
   updatedAt       DateTime        @updatedAt
   members         User[]
   shoppingItems   ShoppingItem[]
+  shoppingGroups  ShoppingGroup[]
   todoItems       TodoItem[]
   reminders       Reminder[]
+  reminderGroups  ReminderGroup[]
   spendingEntries SpendingEntry[]
   savingsPots     SavingsPot[]
+  monthlyBills    MonthlyBill[]
+  incomeSources   IncomeSource[]
+}
+
+model ShoppingGroup {
+  id          String         @id @default(cuid())
+  name        String
+  color       String         @default("slate")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  householdId String
+  household   Household      @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  items       ShoppingItem[]
 }
 
 model ShoppingItem {
-  id          String    @id @default(cuid())
+  id          String         @id @default(cuid())
   label       String
   category    String
-  done        Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  done        Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   householdId String
-  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  household   Household      @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  groupId     String?
+  group       ShoppingGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
 }
 
 model TodoItem {
@@ -99,14 +116,27 @@ model TodoItem {
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
 }
 
+model ReminderGroup {
+  id          String     @id @default(cuid())
+  name        String
+  color       String     @default("slate")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  householdId String
+  household   Household  @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  reminders   Reminder[]
+}
+
 model Reminder {
-  id          String    @id @default(cuid())
+  id          String         @id @default(cuid())
   label       String
   dueDate     DateTime
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   householdId String
-  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  household   Household      @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  groupId     String?
+  group       ReminderGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
 }
 
 model SpendingEntry {
@@ -123,13 +153,34 @@ model SpendingEntry {
   addedBy     User      @relation(fields: [addedById], references: [id])
 }
 
+model MonthlyBill {
+  id          String    @id @default(cuid())
+  label       String
+  amount      Float
+  dueDay      Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+}
+
+model IncomeSource {
+  id          String    @id @default(cuid())
+  label       String
+  amount      Float
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+}
+
 model SavingsPot {
   id            String            @id @default(cuid())
   householdId   String
   createdById   String
   name          String
   emoji         String            @default("🏦")
-  targetAmount  Float
+  targetAmount  Float?
   currentAmount Float             @default(0)
   color         String            @default("green")
   isArchived    Boolean           @default(false)

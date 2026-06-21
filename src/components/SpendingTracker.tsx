@@ -17,6 +17,9 @@ type SpendingTrackerProps = {
   initialEntries: SpendingEntry[];
   initialMonth: number;
   initialYear: number;
+  budget: number;
+  totalIncome: number;
+  totalBills: number;
 };
 
 const CATEGORIES = [
@@ -40,8 +43,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Shopping":      "#EF9F27",
   "Other":         "#A3C644",
 };
-
-const MONTHLY_BUDGET = 2800;
 
 function formatDate(d: Date | string): string {
   return new Date(d).toLocaleDateString("en-GB", {
@@ -73,6 +74,9 @@ export default function SpendingTracker({
   initialEntries,
   initialMonth,
   initialYear,
+  budget,
+  totalIncome,
+  totalBills,
 }: SpendingTrackerProps) {
   const [entries, setEntries] = useState<SpendingEntry[]>(initialEntries);
   const [showForm, setShowForm] = useState(false);
@@ -87,8 +91,9 @@ export default function SpendingTracker({
   const [formError, setFormError] = useState("");
 
   const totalSpent = entries.reduce((s, e) => s + e.amount, 0);
-  const pct = Math.min((totalSpent / MONTHLY_BUDGET) * 100, 100);
-  const remaining = Math.max(MONTHLY_BUDGET - totalSpent, 0);
+  const hasBudget = budget > 0;
+  const pct = hasBudget ? Math.min((totalSpent / budget) * 100, 100) : 0;
+  const remaining = Math.max(budget - totalSpent, 0);
 
   // Group by category for mini breakdown
   const byCategory = entries.reduce<Record<string, number>>((acc, e) => {
@@ -152,24 +157,56 @@ export default function SpendingTracker({
           <span className="widget-label" style={{ marginBottom: 0 }}>
             {new Date(initialYear, initialMonth).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
           </span>
-          <span className={statusClass}>{statusLabel}</span>
+          {hasBudget && <span className={statusClass}>{statusLabel}</span>}
         </div>
 
         <div className="spend-widget__amounts">
           <div>
             <div className="spend-widget__total">{formatAmount(totalSpent)}</div>
-            <div className="spend-widget__sub">of {formatAmount(MONTHLY_BUDGET)} budget</div>
+            <div className="spend-widget__sub">
+              {hasBudget ? `of ${formatAmount(budget)} to spend` : "spent this month"}
+            </div>
           </div>
           <div className="spend-widget__right">
-            <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--clr-ink-2)" }}>
-              {formatAmount(remaining)} left
-            </div>
+            {hasBudget && (
+              <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--clr-ink-2)" }}>
+                {formatAmount(remaining)} left
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="progress-track">
-          <div className="progress-fill" style={{ width: `${pct}%`, background: progressColor }} />
-        </div>
+        {hasBudget ? (
+          <>
+            <div className="progress-track">
+              <div className="progress-fill" style={{ width: `${pct}%`, background: progressColor }} />
+            </div>
+            <div style={{ display: "flex", gap: "16px", marginTop: "10px", fontSize: "11px", color: "var(--clr-ink-3)" }}>
+              <span>Income {formatAmount(totalIncome)}</span>
+              <span>Bills −{formatAmount(totalBills)}</span>
+              <a href="/dashboard/bills" style={{ marginLeft: "auto", color: "var(--clr-accent)", textDecoration: "none" }}>
+                Edit bills &amp; income →
+              </a>
+            </div>
+          </>
+        ) : (
+          <a
+            href="/dashboard/bills"
+            style={{
+              display: "block",
+              marginTop: "4px",
+              padding: "10px 12px",
+              borderRadius: "var(--r-sm)",
+              background: "var(--clr-bg-alt)",
+              color: "var(--clr-ink-2)",
+              fontSize: "13px",
+              textDecoration: "none",
+              textAlign: "center",
+            }}
+          >
+            Add your income &amp; bills to set a spending budget →
+          </a>
+        )}
 
         {/* Category breakdown */}
         {topCategories.length > 0 && (

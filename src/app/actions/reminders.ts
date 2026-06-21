@@ -21,15 +21,58 @@ export async function getReminders() {
   });
 }
 
-export async function addReminder(label: string, dueDate: string) {
+export async function getReminderGroups() {
+  const householdId = await getHouseholdId();
+  return prisma.reminderGroup.findMany({
+    where: { householdId },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
+export async function addReminder(label: string, dueDate: string, groupId?: string | null) {
   const householdId = await getHouseholdId();
   await prisma.reminder.create({
-    data: { label, dueDate: new Date(dueDate), householdId },
+    data: {
+      label,
+      dueDate: new Date(dueDate),
+      householdId,
+      groupId: groupId || null,
+    },
   });
   revalidatePath("/dashboard/reminders");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteReminder(id: string) {
   await prisma.reminder.delete({ where: { id } });
+  revalidatePath("/dashboard/reminders");
+  revalidatePath("/dashboard");
+}
+
+export async function moveReminderToGroup(id: string, groupId: string | null) {
+  await prisma.reminder.update({
+    where: { id },
+    data: { groupId: groupId || null },
+  });
+  revalidatePath("/dashboard/reminders");
+}
+
+export async function addReminderGroup(name: string, color = "slate") {
+  const householdId = await getHouseholdId();
+  const group = await prisma.reminderGroup.create({
+    data: { name, color, householdId },
+  });
+  revalidatePath("/dashboard/reminders");
+  return group;
+}
+
+export async function renameReminderGroup(id: string, name: string) {
+  await prisma.reminderGroup.update({ where: { id }, data: { name } });
+  revalidatePath("/dashboard/reminders");
+}
+
+export async function deleteReminderGroup(id: string) {
+  // Reminders in this group are kept; their groupId is set to null (onDelete: SetNull).
+  await prisma.reminderGroup.delete({ where: { id } });
   revalidatePath("/dashboard/reminders");
 }

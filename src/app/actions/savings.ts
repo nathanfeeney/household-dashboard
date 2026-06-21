@@ -11,7 +11,6 @@ export type SavingsPot = {
   createdById: string;
   name: string;
   emoji: string;
-  targetAmount: number;
   currentAmount: number;
   color: "green" | "blue" | "amber" | "coral" | "purple" | "teal" | "pink" | "indigo" | "lime" | "slate";
   isArchived: boolean;
@@ -54,17 +53,23 @@ export async function getSavingsPots(): Promise<SavingsPot[]> {
   });
 
   return pots.map((p) => ({
-  ...p,
-  color: p.color as SavingsPot["color"],
-  createdAt: p.createdAt.toISOString(),
-  updatedAt: p.updatedAt.toISOString(),
-}));
+    id: p.id,
+    householdId: p.householdId,
+    createdById: p.createdById,
+    name: p.name,
+    emoji: p.emoji,
+    currentAmount: p.currentAmount,
+    color: p.color as SavingsPot["color"],
+    isArchived: p.isArchived,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+  }));
 }
 
 export async function createSavingsPot(formData: {
   name: string;
   emoji: string;
-  target_amount: number;
+  starting_amount?: number;
   color: SavingsPot["color"];
 }): Promise<void> {
   const session = await getSession();
@@ -76,7 +81,7 @@ export async function createSavingsPot(formData: {
       createdById: session.user.id,
       name: formData.name,
       emoji: formData.emoji,
-      targetAmount: formData.target_amount,
+      currentAmount: formData.starting_amount ?? 0,
       color: formData.color,
     },
   });
@@ -85,25 +90,33 @@ export async function createSavingsPot(formData: {
   revalidatePath("/dashboard/savings");
 }
 
-export async function addContribution(formData: {
+/* Adjust a pot's live balance. Positive amount = deposit, negative = withdrawal.
+   The balance is never allowed to go below zero. */
+export async function adjustPotBalance(formData: {
   pot_id: string;
   amount: number;
   note?: string;
 }): Promise<void> {
   const session = await getSession();
 
+  const pot = await prisma.savingsPot.findUnique({ where: { id: formData.pot_id } });
+  if (!pot) throw new Error("Pot not found");
+
+  const newAmount = Math.max(pot.currentAmount + formData.amount, 0);
+  const actualDelta = newAmount - pot.currentAmount;
+
   await prisma.$transaction([
     prisma.potContribution.create({
       data: {
         potId: formData.pot_id,
         contributedById: session.user.id,
-        amount: formData.amount,
+        amount: actualDelta,
         note: formData.note ?? null,
       },
     }),
     prisma.savingsPot.update({
       where: { id: formData.pot_id },
-      data: { currentAmount: { increment: formData.amount } },
+      data: { currentAmount: newAmount },
     }),
   ]);
 
@@ -141,7 +154,7 @@ export async function archiveSavingsPot(id: string): Promise<void> {
 
 export async function updateSavingsPot(
   id: string,
-  updates: Partial<Pick<SavingsPot, "name" | "emoji" | "targetAmount" | "color">>
+  updates: Partial<Pick<SavingsPot, "name" | "emoji" | "color">>
 ): Promise<void> {
   await getSession();
 

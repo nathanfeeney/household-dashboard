@@ -1,12 +1,12 @@
-import { getReminders } from "@/app/actions/reminders";
-import ReminderList from "@/components/ReminderList";
+import { getReminders, getReminderGroups } from "@/app/actions/reminders";
+import RemindersView from "@/components/RemindersView";
 
 export default async function RemindersPage() {
-  const reminders = await getReminders();
+  const [reminders, groups] = await Promise.all([getReminders(), getReminderGroups()]);
   return (
     <div className="sub-page">
       <h1 className="page-title" style={{ marginBottom: "1rem" }}>Reminders</h1>
-      <ReminderList initialReminders={reminders} />
+      <RemindersView reminders={reminders} groups={groups} />
     </div>
   );
 }

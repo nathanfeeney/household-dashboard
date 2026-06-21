@@ -21,17 +21,27 @@ export async function getShoppingItems() {
   });
 }
 
-export async function clearShoppingList() {
+export async function getShoppingGroups() {
   const householdId = await getHouseholdId();
-  await prisma.shoppingItem.deleteMany({ where: { householdId } });
-  revalidatePath("/dashboard/shopping");
-
+  return prisma.shoppingGroup.findMany({
+    where: { householdId },
+    orderBy: { createdAt: "asc" },
+  });
 }
 
-export async function addShoppingItem(label: string, category: string) {
+export async function clearShoppingList(groupId?: string | null) {
+  const householdId = await getHouseholdId();
+  // When a group is passed, only clear that group's items; otherwise clear all.
+  await prisma.shoppingItem.deleteMany({
+    where: groupId === undefined ? { householdId } : { householdId, groupId: groupId || null },
+  });
+  revalidatePath("/dashboard/shopping");
+}
+
+export async function addShoppingItem(label: string, category: string, groupId?: string | null) {
   const householdId = await getHouseholdId();
   const newItem = await prisma.shoppingItem.create({
-    data: { label, category, householdId },
+    data: { label, category, householdId, groupId: groupId || null },
   });
   return newItem;
 }
@@ -49,3 +59,30 @@ export async function deleteShoppingItem(id: string) {
   revalidatePath("/dashboard/shopping");
 }
 
+export async function moveShoppingItemToGroup(id: string, groupId: string | null) {
+  await prisma.shoppingItem.update({
+    where: { id },
+    data: { groupId: groupId || null },
+  });
+  revalidatePath("/dashboard/shopping");
+}
+
+export async function addShoppingGroup(name: string, color = "slate") {
+  const householdId = await getHouseholdId();
+  const group = await prisma.shoppingGroup.create({
+    data: { name, color, householdId },
+  });
+  revalidatePath("/dashboard/shopping");
+  return group;
+}
+
+export async function renameShoppingGroup(id: string, name: string) {
+  await prisma.shoppingGroup.update({ where: { id }, data: { name } });
+  revalidatePath("/dashboard/shopping");
+}
+
+export async function deleteShoppingGroup(id: string) {
+  // Items in this group are kept; their groupId is set to null (onDelete: SetNull).
+  await prisma.shoppingGroup.delete({ where: { id } });
+  revalidatePath("/dashboard/shopping");
+}

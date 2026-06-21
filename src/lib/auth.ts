@@ -30,7 +30,7 @@ export const auth = betterAuth({
         const { Resend } = await import("resend");
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
-          from: "tnfeeney@hotmail.com",
+          from: "Household Dashboard <onboarding@resend.dev>",
           to: email,
           subject: "Sign in to Household Dashboard",
           html: `<a href="${url}">Click here to sign in</a>`,
