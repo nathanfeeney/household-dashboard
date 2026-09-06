@@ -19,7 +19,7 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    disableSignUp: false, // no public sign-up form — you create the two accounts yourself
+    disableSignUp: true, // no public sign-up form — you create the two accounts yourself
   },
   socialProviders: {
     github: {
