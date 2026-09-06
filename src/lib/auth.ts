@@ -8,16 +8,19 @@ const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
-
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
   account: {
-		accountLinking: {
-			trustedProviders: ["github", "google"],
-		},
-	},
+    accountLinking: {
+      trustedProviders: ["github", "google"],
+    },
+  },
+  emailAndPassword: {
+    enabled: true,
+    disableSignUp: false, // no public sign-up form — you create the two accounts yourself
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,
